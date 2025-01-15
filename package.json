@@ -1,6 +1,7 @@
 {
 	"name": "next-app-template",
 	"version": "0.0.1",
+	"proxy": "http://localhost:3001",
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
@@ -10,6 +11,10 @@
 	},
 	"dependencies": {
 		"@faker-js/faker": "^9.3.0",
+		"@fullcalendar/daygrid": "^6.1.15",
+		"@fullcalendar/interaction": "^6.1.15",
+		"@fullcalendar/react": "^6.1.15",
+		"@fullcalendar/timegrid": "^6.1.15",
 		"@nextui-org/button": "2.2.8",
 		"@nextui-org/code": "2.2.5",
 		"@nextui-org/input": "2.4.7",
@@ -24,12 +29,23 @@
 		"@nextui-org/theme": "^2.4.4",
 		"@react-aria/ssr": "3.9.7",
 		"@react-aria/visually-hidden": "3.8.18",
+		"@schedule-x/drag-and-drop": "^2.13.0",
+		"@schedule-x/event-modal": "^2.13.0",
+		"@schedule-x/events-service": "^2.13.0",
+		"@schedule-x/react": "^2.13.0",
+		"@schedule-x/theme-default": "^2.13.0",
+		"@toast-ui/calendar": "^2.1.3",
+		"antd": "^5.23.0",
 		"clsx": "2.1.1",
 		"framer-motion": "11.13.1",
 		"intl-messageformat": "^10.5.0",
+		"moment": "^2.30.1",
+		"moment-timezone": "^0.5.46",
 		"next": "^15.1.4",
 		"next-themes": "^0.4.4",
 		"react": "18.3.1",
+		"react-big-calendar": "^1.17.1",
+		"react-calendar": "^5.1.0",
 		"react-dom": "18.3.1"
 	},
 	"devDependencies": {

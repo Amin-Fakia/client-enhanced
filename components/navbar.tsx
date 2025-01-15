@@ -2,19 +2,18 @@
 'use client'
 import {
   Navbar, 
-  NavbarBrand, 
+ 
   NavbarContent, 
   NavbarItem, 
-  NavbarMenuToggle,
-  NavbarMenu,
-  NavbarMenuItem
+
 } from "@nextui-org/navbar";
 import { useState } from 'react';
 import Link from "next/link";
 
+
 export const NavBar = () => {
-  const [activeItem, setActiveItem] = useState('/mitarbeiter');
- 
+  const [activeItem, setActiveItem] = useState('/events');
+  
   return (
    <>
    <Navbar  classNames={{
