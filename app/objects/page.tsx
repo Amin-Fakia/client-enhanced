@@ -1,132 +1,260 @@
 'use client'
-
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@nextui-org/react';
-import { faker } from '@faker-js/faker';
-import { useState, useEffect } from 'react';
-import { Button, Modal, ModalBody, ModalHeader,useDisclosure, ModalContent, Input} from '@nextui-org/react';
-
+import { useEffect, useState } from 'react';
+import {Accordion, AccordionItem, Button,Chip,Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader,Card,CardHeader,CardFooter,CardBody,
+  Table, TableHeader, TableBody, TableColumn, TableRow, TableCell,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  Select,
+  useDisclosure,
+   SelectItem} from "@nextui-org/react";
 interface Object {
-  object_id:any,
-  object_name: string,
-  ausgeliehen: boolean
+  object_id: number;
+  object_name: string;
+  imLager: boolean;
+  categorie: string;
+  beschreibung: string;
+  assignedEvent?: string;
 }
+interface Event {
+  event_id: number;
+  event_name: string;
+}
+import CustomModal from '@/components/CustomModal';
 
-const FakeObjectsTable = () => {
-    const [objects, setObjects] = useState<Object[]>([]);
-    const [objectName, setObjectName] = useState('');
-    const [ausgeliehen, setAusgeliehen] = useState(false);
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    
-      useEffect(() => {
-        const fetchObjects = async () => {
-          try {
-            const response = await fetch('http://localhost:3001/objects');
-            const data = await response.json();
-            setObjects(data.objects || []); // Ensure data.people is an array
+
+
+
+
+const ObjectsPage = () => {
+  const [objects, setObjects] = useState<Object[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [events, setEvents] = useState<Event[]>([]);
+  const [newObjectName, setNewObjectName] = useState('');
+  const [newCategorie, setNewCategorie] = useState('');
+  const [newBeschreibung, setNewBeschreibung] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onOpenChange: onDrawerOpenChange } = useDisclosure();
+  const [selectedObject, setSelectedObject] = useState<Object>();
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchObjects = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/objects');
+        const data = await response.json();
+        setObjects(data.objects || []);
+      } catch (error) {
+        console.error('Error fetching objects:', error);
+      }
+    };
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/events');
+        const data = await response.json();
+        setEvents(data.events || []);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+    fetchEvents();
+
+    fetchObjects();
+  }, []);
+
+   // Filter objects based on search query
+   const filteredObjects = objects.filter(object =>
+    object.object_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // grouping objects based on category
+
+  const groupedObjects = objects.reduce((acc, object) => {
+    if (!acc[object.categorie]) {
+      acc[object.categorie] = [];
+    }
+    acc[object.categorie].push(object);
+    return acc;
+  }, {} as Record<string, Object[]>);
+
+
+  groupedObjects["Alle"] = filteredObjects;
+
+
+  const handleAddObject = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3001/objects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "object_name": newObjectName,
+          "imLager": true,
+          "categorie": newCategorie,
+          "beschreibung": newBeschreibung,
+        }),
+      });
+      const data = await response.json();  
+      if (response.ok) {
+        // Assuming the newly created object is returned in the 'data' object
+       
+        setObjects([...objects, data]);
+        setNewObjectName('');
+        setNewCategorie('');
+        setNewBeschreibung('');
+        setIsOpen(false);
+      } else {
+        console.error('Error adding object:', data.error);
+      }
+    } catch (error) {
+      console.error('Error adding object:', error);
+    }
+  };
+
+  const handleShowDetails = (object: Object) => {
+    setSelectedObject(object);
+    onDrawerOpen();
+  };
+  const handleAssignToEvent = async () => {
+    if (selectedObject && selectedEventId !== null) {
+      const selectedEvent = events.find(event => event.event_id === selectedEventId);
+      
+      if (selectedEvent) {
+        try {
+          const response = await fetch(`http://localhost:3001/objects/${selectedObject.object_id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ assignedEvent: selectedEvent.event_name, imLager: false }),
+          });
+
+          if (response.ok) {
+            setSelectedObject({ ...selectedObject, assignedEvent: selectedEvent.event_name });
+            setObjects(objects.map(obj => obj.object_id === selectedObject.object_id ? { ...obj, assignedEvent: selectedEvent.event_name, imLager: false} : obj));
+          } else {
+            console.error('Error updating object:', await response.json());
+          }
+        } catch (error) {
+          console.error('Error updating object:', error);
+        }
+      }
+    }
+  };
+  return (
+    <div>
+      <Input
+        type="text"
+        placeholder="Equipments suchen..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className='mb-5'
+      />
+      
+      <Accordion variant="shadow">
+        {Object.keys(groupedObjects).map((category) => (
+          <AccordionItem key={category} title={category}>
+            <Table aria-label="Example table with dynamic content" className='' selectionMode="single">
+              <TableHeader>
+                <TableColumn>Object Name</TableColumn>
+                <TableColumn>Category</TableColumn>
+                <TableColumn>Im Lager</TableColumn>
+                <TableColumn>Actions</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {groupedObjects[category].map((object) => (
+                  <TableRow key={object.object_id}>
+                    <TableCell>{object.object_name}</TableCell>
+                    <TableCell>{object.categorie}</TableCell>
+                    <TableCell><Chip color={object.imLager ? 'success' : 'danger'} >{object.imLager ? 'Im Lager' : 'Nicht Im Lager'}</Chip></TableCell>
+                    <TableCell><Button onPress={()=>handleShowDetails(object)}>Show Details</Button></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
             
-          } catch (error) {
-            console.error('Error fetching objects:', error);
-          }
-        };
-    
-        fetchObjects();
-      }, []);
-
-        const handleAddObject = async (e: React.FormEvent) => {
-          e.preventDefault();
-          try {
-            const response = await fetch('http://localhost:3001/objects', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ "object_name":objectName, "ausgeliehen": ausgeliehen }),
-            });
-            const data = await response.json();
-            if (response.ok) {
-              setObjects([...objects, { object_name: objectName, ausgeliehen, object_id: data.object_id }]);
-              setObjectName('');
-              setAusgeliehen(false);
-              onOpenChange();
-            } else {
-              console.error('Error adding person:', data.error);
-            }
-          } catch (error) {
-            console.error('Error adding person:', error);
-          }
-        };
-  
-    return (
-      <div>
-        <Table aria-label="Example objects table">
-        <TableHeader>
-          <TableColumn>OBJECT ID</TableColumn>
-          <TableColumn>NAME</TableColumn>
-          <TableColumn>AUSGELIEHEN</TableColumn>
-        </TableHeader>
-        <TableBody>
-          {objects.map((obj) => (
-            <TableRow key={obj.object_id}>
-              <TableCell>{obj.object_id}</TableCell>
-              <TableCell>{obj.object_name}</TableCell>
-              <TableCell>{obj.ausgeliehen ? 'Ausgeliehen' : 'Nicht Ausgeliehen'}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <Button onPress={onOpen} className="mt-4">
-        + Add Object
-      </Button>
-
-      <Modal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        backdrop="blur"
-        classNames={{
-          body: "py-6",
-          backdrop: "bg-[#292f46]/50 backdrop-opacity-40",
-          base: "border-[#292f46] bg-[#19172c] dark:bg-[#19172c] text-[#a8b0d3]",
-          header: "border-b-[1px] border-[#292f46]",
-          footer: "border-t-[1px] border-[#292f46]",
-          closeButton: "hover:bg-white/5 active:bg-white/10",
-        }}
-      >
-        <ModalContent>
-          <ModalHeader><h2>Add New Object</h2></ModalHeader>
-          <ModalBody>
-            <form onSubmit={handleAddObject}>
-              <Input
-              
-                fullWidth
-                color="primary"
-                size="lg"
-                placeholder="Object Name"
-                value={objectName}
-                onChange={(e) => setObjectName(e.target.value)}
-              />
-              <div className="mt-4">
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox"
-                    checked={ausgeliehen}
-                    onChange={(e) => setAusgeliehen(e.target.checked)}
-                  />
-                  <span className="ml-2">Ausgeliehen</span>
-                </label>
-              </div>
-              <Button type="submit" className="mt-4">
-                Submit
-              </Button>
-            </form>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-      </div>
+          </AccordionItem>
+        ))}
+      </Accordion>
+      <Drawer placement='right' onClose={onDrawerOpenChange} isOpen={isDrawerOpen}>
+        <DrawerContent>
+          <DrawerHeader>Equipment Details</DrawerHeader>
+          <DrawerBody>
+            {selectedObject && (
+              <>
+                <p>Name: {selectedObject.object_name}</p>
+                <p>Categorie: {selectedObject.categorie}</p>
+                <p>Beschreibung: {selectedObject.beschreibung}</p>
+                <p>Im Lager: {selectedObject.imLager ? 'Ja' : 'Nein'}</p>
+                {selectedObject.assignedEvent ? (
+                  <p>Assigned to Event: {selectedObject.assignedEvent} {selectedObject.imLager == false}</p>
+                  
+                ) : (
+                  <>
+                    <Select
+                      placeholder="Select Event"
+                      onChange={(e) => setSelectedEventId(Number(e.target.value))}
+                      disabled={!selectedObject.imLager}
+                    >
+                      {events.map(event => (
+                        <SelectItem  key={event.event_id} value={event.event_id}>
+                          {event.event_name}
+                        </SelectItem >
+                      ))}
+                    </Select>
+                    <Button
+                      onPress={handleAssignToEvent}
+                      disabled={!selectedObject.imLager || selectedEventId === null}
+                    >
+                      Assign to Event
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+     
       
 
-    );
-  };
-  
-  export default FakeObjectsTable;
+      {/*  */}
+      <Button onPress={()=>setIsOpen(!isOpen)} className='mt-5'>+ Neues Equipment</Button>
+      <CustomModal isOpen={isOpen} onOpenChange={()=>setIsOpen(!isOpen)}>
+        <form onSubmit={handleAddObject}>
+            <Input
+              type="text"
+              placeholder="Object Name"
+              value={newObjectName}
+              onChange={(e) => setNewObjectName(e.target.value)}
+              className='mb-5'
+            />
+            <Input
+              type="text"
+              placeholder="Categorie"
+              value={newCategorie}
+              onChange={(e) => setNewCategorie(e.target.value)}
+              className='mb-5'
+            />
+            <Input
+              type="text"
+              placeholder="Beschreibung"
+              value={newBeschreibung}
+              onChange={(e) => setNewBeschreibung(e.target.value)}
+              className='mb-5'
+            />
+
+            <Button type="submit" className="w-full mt-4">
+              Submit
+            </Button>
+        </form>
+      </CustomModal>
+      
+    </div>
+  );
+};
+export default ObjectsPage;
