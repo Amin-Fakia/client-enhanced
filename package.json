@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"@faker-js/faker": "^9.3.0",
+		"@fullcalendar/core": "^6.1.15",
 		"@fullcalendar/daygrid": "^6.1.15",
 		"@fullcalendar/interaction": "^6.1.15",
 		"@fullcalendar/react": "^6.1.15",
@@ -36,7 +37,9 @@
 		"@schedule-x/theme-default": "^2.13.0",
 		"@toast-ui/calendar": "^2.1.3",
 		"antd": "^5.23.0",
+		"axios": "^1.7.9",
 		"clsx": "2.1.1",
+		"date-fns": "^4.1.0",
 		"framer-motion": "11.13.1",
 		"intl-messageformat": "^10.5.0",
 		"moment": "^2.30.1",

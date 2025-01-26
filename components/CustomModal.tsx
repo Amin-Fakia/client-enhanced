@@ -16,6 +16,7 @@ import {
   interface CustomModalProps {
     // Add any custom props you want to pass to your Modal component
     isOpen: boolean;
+    headerText: string;
     onOpenChange: () => void;
     children: React.ReactNode;
   }
@@ -23,6 +24,7 @@ import {
   const CustomModal: React.FC<CustomModalProps> = ({
     isOpen,
     onOpenChange,
+    headerText,
     children,
   }) => {
     const { isOpen: disclosureIsOpen, onOpen, onClose } = useDisclosure();
@@ -42,7 +44,7 @@ import {
       >
         <ModalContent>
           <ModalHeader>
-            <h2>Custom Modal Header</h2>
+            <h2>{headerText}</h2>
           </ModalHeader>
           <ModalBody>
             {children}
