@@ -1,89 +1,23 @@
-import React, { useState, useRef,useEffect} from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import type { CalendarProps } from './calendar-types'
+import CalendarHeader from './header/calendar-header'
+import CalendarBody from './body/calendar-body'
+import CalendarHeaderActions from './header/actions/calendar-header-actions'
+import CalendarHeaderDate from './header/date/calendar-header-date'
+import CalendarHeaderActionsMode from './header/actions/calendar-header-actions-mode'
+import CalendarHeaderActionsAdd from './header/actions/calendar-header-actions-add'
+import CalendarProvider from './calendar-provider'
 
-import { useEvents } from "@/hooks/useEvents";
-import { useObjects } from "@/hooks/useObjects"; // Assuming you split object fetching logic here
-import usePeople from "@/hooks/usePeople"; // Assuming you split people fetching logic here
-import { EventModal } from "./EventModal";
-
-const Calendar = () => {
-  const { addEvent: addEventToBackend, deleteEvent: deleteEventFromBackend, fetchEvents } = useEvents();
-  const [events, setEvents] = useState([]); // Local events state
-  const { objects } = useObjects(); // Fetch objects
-  const { people } = usePeople();   // Fetch people
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDateRange, setSelectedDateRange] = useState({ start: new Date(), end: new Date() });
-  const calendarRef = useRef(null);
-
-  useEffect(() => {
-    
-    const loadEvents = async () => {
-      const fetchedEvents = await fetchEvents();
-      
-      setEvents(fetchedEvents);
-      
-    };
-    loadEvents()
-
-    
-  }, []);
-
-  // Handle date selection from FullCalendar
-  const handleDateSelect = (selectInfo) => {
-    
-    
-    
-    setSelectedDateRange({
-      start: new Date(selectInfo.startStr),
-      end: new Date(selectInfo.endStr),
-    });
-    setIsModalOpen(true);
-  };
-
-  // Handle event click to confirm deletion
-  const handleEventClick = async (clickInfo) => {
-    if (window.confirm(`Do you want to delete the event '${clickInfo.event.title}'?`)) {
-      const eventId = clickInfo.event.id; 
-      // Delete from backend
-       await deleteEventFromBackend(eventId);
-
-       // Update local state
-       setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
-     
-    }
-  };
-  // Handle event addition
-  const handleAddEvent = async (newEvent) => {
-    const eventToAdd = {
-      title: newEvent.title,
-      start: selectedDateRange.start.toISOString(),
-      end: selectedDateRange.end.toISOString(),
-    };
-
-    // Add to backend
-    const addedEvent = await addEventToBackend(eventToAdd);
-
-    // Update local state with new event
-    setEvents((prevEvents) => [
-      ...prevEvents,
-      {
-        id: addedEvent.id,
-        title: addedEvent.title,
-        start: new Date(addedEvent.start),
-        end: new Date(addedEvent.end),
-      },
-    ]);
-    
-
-    setIsModalOpen(false);
-  };
-  
-
+export default function Calendar({
+  events,
+  setEvents,
+  mode,
+  setMode,
+  date,
+  setDate,
+  calendarIconIsToday = true,
+}: CalendarProps) {
   return (
+<<<<<<< HEAD
     
     <div className="bg-dark min-h-screen text-light p-4">
       <h1 className="text-2xl font-bold mb-4 text-center">Event Calendar</h1>
@@ -125,3 +59,25 @@ const Calendar = () => {
 };
 
 export default Calendar;
+=======
+    <CalendarProvider
+      events={events}
+      setEvents={setEvents}
+      mode={mode}
+      setMode={setMode}
+      date={date}
+      setDate={setDate}
+      calendarIconIsToday={calendarIconIsToday}
+    >
+      <CalendarHeader>
+        <CalendarHeaderDate />
+        <CalendarHeaderActions>
+          <CalendarHeaderActionsMode />
+          <CalendarHeaderActionsAdd />
+        </CalendarHeaderActions>
+      </CalendarHeader>
+      <CalendarBody />
+    </CalendarProvider>
+  )
+}
+>>>>>>> 4b8963a65ffe8737bf3edbcd236dd429d24d2d67
