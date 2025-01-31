@@ -132,6 +132,7 @@ const ObjectsPage = () => {
           console.error('Error removing object from event:', error);
         }
       };
+  
   return (
     <div>
       <Input
@@ -178,6 +179,7 @@ const ObjectsPage = () => {
               onChange={(e) => setNewBeschreibung(e.target.value)}
               className='mb-5'
             />
+            
 
             <Button type="submit" className="w-full mt-4">
               Submit

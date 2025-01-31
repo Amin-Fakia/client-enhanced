@@ -1,5 +1,6 @@
-import { Drawer, DrawerContent,Divider, DrawerHeader, DrawerBody, Button, Select ,SelectItem,Chip} from "@nextui-org/react";
+import { Drawer, DrawerContent,Divider, DrawerHeader, DrawerBody, Button, Select ,SelectItem,Chip,Textarea} from "@nextui-org/react";
 
+import { useState } from "react";
 interface Object {
   object_id: number;
   object_name: string;
@@ -7,6 +8,7 @@ interface Object {
   categorie: string;
   beschreibung: string;
   assignedEvent?: string;
+  notizen: string;
 }
 
 interface Event {
@@ -35,6 +37,30 @@ const DetailsDrawer: React.FC<DetailsDrawerProps> = ({
   isDrawerOpen,
   onDrawerOpenChange,
 }) => {
+  const [notizen, setNotizen] = useState(selectedObject?.notizen?? '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+
+  const handleDescriptionChange = async () => {
+    const response = await fetch('http://localhost:3001/objects/' + selectedObject?.object_id, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        notizen: notizen,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update object');
+    }
+    setNotizen(response.ok? (await response.json()).notizen : '');
+    setIsSaving(false);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 500); // Reset after 2 seconds
+    
+  };
   return (
     <Drawer placement='right' onClose={onDrawerOpenChange} isOpen={isDrawerOpen}>
       <DrawerContent>
@@ -75,12 +101,30 @@ const DetailsDrawer: React.FC<DetailsDrawerProps> = ({
                   </Select>
                   <Button
                     onPress={handleAssignToEvent}
+                    isLoading={isSaving}
+                    
                     disabled={!selectedObject.imLager || selectedEventId === null}
                   >
                     Assign to Event
                   </Button>
                 </>
               )}
+              {/* HandleOnChange object.Beschreibung parameter post request */}
+              <Textarea
+            className="max-w mt-5"
+            label="Notizen"
+            // value={description}
+            defaultValue={selectedObject.notizen }
+            placeholder=""
+            minRows={10}
+           
+            onValueChange={(description) => setNotizen(description)}
+            />
+            <Button 
+            className="mt-4"
+             onPress={handleDescriptionChange}
+              color={saveSuccess ? 'success' : 'primary'}
+              startContent={saveSuccess ? "Loading": ""}>{saveSuccess ? "Gespeichert " : "Speichern" } </Button>
             </>
           )}
         </DrawerBody>

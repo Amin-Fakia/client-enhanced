@@ -88,8 +88,9 @@ const Calendar = () => {
     <div className="bg-dark min-h-screen text-light p-4">
       <h1 className="text-2xl font-bold mb-4 text-center">Event Calendar</h1>
 
-      {/* FullCalendar Component */}
-      
+      {/* FullCalendar Component 
+      TODO: AM PM time format to 24 Hour format
+      */}
       <FullCalendar
         
         ref={calendarRef}
