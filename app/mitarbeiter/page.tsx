@@ -19,7 +19,7 @@ import {
 
 interface Person {
   name: string;
-  age: string;
+  phone: string;
   email: string;
   id: any;
 }
@@ -28,6 +28,8 @@ const Page = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
+  const [phone, setPhone] = useState('');
+
   const [email, setEmail] = useState('');
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -47,19 +49,21 @@ const Page = () => {
 
   const handleAddPerson = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Adding person:', name, phone, email);
     try {
       const response = await fetch('http://localhost:3001/people', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, age, email }),
+        body: JSON.stringify({ name, phone, email }),
       });
       const data = await response.json();
       if (response.ok) {
-        setPeople([...people, { name, age, email, id: data.person_id }]);
+        setPeople([...people, { name, phone, email, id: data.person_id }]);
         setName('');
         setAge('');
+        setPhone('');
         setEmail('');
         onOpenChange(); // Close the modal
       } else {
@@ -75,13 +79,13 @@ const Page = () => {
       <Table aria-label="Example static collection table">
         <TableHeader>
           <TableColumn>NAME</TableColumn>
-          <TableColumn>EMAIL</TableColumn>
+          <TableColumn>PHONE</TableColumn>
         </TableHeader>
         <TableBody>
           {people.map((person,index) => (
             <TableRow key={index}>
               <TableCell>{person.name}</TableCell>
-              <TableCell>{person.email}</TableCell>
+              <TableCell>{person.phone}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -117,13 +121,22 @@ const Page = () => {
                 onChange={(e) => setName(e.target.value)}
                 className="mb-4"
               />
-              <Input
+              {/* <Input
                 fullWidth
                 color="primary"
                 size="lg"
                 placeholder="Age"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
+                className="mb-4"
+              /> */}
+              <Input
+                fullWidth
+                color="primary"
+                size="lg"
+                placeholder="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="mb-4"
               />
               <Input
