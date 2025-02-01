@@ -27,7 +27,7 @@ const EventsPage = () => {
   const validDate = date instanceof Date && !isNaN(date.getTime()) ? date : new Date();
 
   return (
-      <div className="border-2 border-blue-500 rounded-lg ">
+      <div className="border-4 border-blue-500 rounded-lg ">
         <Calendar 
       events={events}
       setEvents={setEvents}
